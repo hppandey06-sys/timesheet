@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<title>Team Timesheet</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f3f2f1;--white:#ffffff;--primary:#6264a7;--primary-dark:#464775;
+  --accent:#2ea043;--warn:#d83b01;--info:#0078d4;
+  --text:#323130;--subtext:#605e5c;--border:#e1dfdd;
+  --card:#ffffff;--header:#6264a7;--hover:#f5f5f5;
+  --green:#107c10;--red:#d13438;--orange:#ca5010;--blue:#0078d4;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;}
+
+/* ── LOGIN ── */
+#login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:linear-gradient(135deg,#464775 0%,#6264a7 100%);
+}
+.login-card{background:#fff;border-radius:12px;padding:40px;width:380px;box-shadow:0 8px 40px rgba(0,0,0,.2);}
+.login-logo{text-align:center;margin-bottom:24px;}
+.login-logo .icon{font-size:40px;}
+.login-logo h1{font-size:20px;font-weight:700;color:var(--primary);margin-top:8px;}
+.login-logo p{font-size:12px;color:var(--subtext);margin-top:4px;}
+.login-card label{font-size:12px;font-weight:600;color:var(--subtext);display:block;margin-bottom:6px;}
+.login-card select,.login-card input{
+  width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:6px;
+  font-family:inherit;font-size:14px;color:var(--text);background:#faf9f8;
+  outline:none;transition:border-color .2s;
+}
+.login-card select:focus,.login-card input:focus{border-color:var(--primary);}
+.login-sep{margin:14px 0;}
+.btn-login{
+  width:100%;padding:11px;background:var(--primary);color:#fff;border:none;
+  border-radius:6px;font-family:inherit;font-size:14px;font-weight:600;
+  cursor:pointer;transition:background .2s;margin-top:8px;
+}
+.btn-login:hover{background:var(--primary-dark);}
+
+/* ── SHELL ── */
+#app{display:none;flex-direction:column;min-height:100vh;}
+.topbar{
+  background:var(--primary);color:#fff;padding:0 20px;
+  display:flex;align-items:center;height:52px;gap:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:100;
+}
+.topbar-title{font-size:16px;font-weight:700;flex:1;}
+.topbar-user{
+  display:flex;align-items:center;gap:8px;font-size:13px;
+  background:rgba(255,255,255,.15);padding:6px 14px;border-radius:20px;
+}
+.avatar{
+  width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;
+}
+.topbar-dept{font-size:11px;opacity:.75;}
+.btn-signout{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;}
+
+/* ── TABS ── */
+.tabs{
+  background:#fff;border-bottom:1px solid var(--border);
+  display:flex;padding:0 20px;overflow-x:auto;
+}
+.tab{
+  padding:12px 18px;font-size:13px;font-weight:500;color:var(--subtext);
+  cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;
+  transition:all .15s;
+}
+.tab:hover{color:var(--primary);background:#f5f4f3;}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+
+/* ── MAIN ── */
+.main{flex:1;padding:20px;max-width:1200px;margin:0 auto;width:100%;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:8px;border:1px solid var(--border);margin-bottom:16px;overflow:hidden;}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:600;color:var(--text);}
+.card-body{padding:18px;}
+
+/* ── FORM ── */
+.form-grid{display:grid;gap:12px;}
+.fg-2{grid-template-columns:1fr 1fr;}
+.fg-3{grid-template-columns:1fr 1fr 1fr;}
+.fg-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.fg-6{grid-template-columns:repeat(6,1fr);}
+@media(max-width:768px){.fg-2,.fg-3,.fg-4,.fg-6{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.fg-2,.fg-3,.fg-4,.fg-6{grid-template-columns:1fr;}}
+.fld label{font-size:11px;font-weight:600;color:var(--subtext);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.fld input,.fld select,.fld textarea{
+  width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:5px;
+  font-family:inherit;font-size:13px;color:var(--text);background:#faf9f8;outline:none;
+  transition:border-color .2s;
+}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--primary);background:#fff;}
+.fld textarea{resize:vertical;min-height:60px;}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border:none;border-radius:5px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn:hover{opacity:.88;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary);}
+.btn-gray{background:#f3f2f1;color:var(--subtext);border:1px solid var(--border);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;border-radius:6px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead tr{background:#f8f7f6;}
+thead th{padding:10px 12px;text-align:left;font-weight:600;color:var(--subtext);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:last-child{border:none;}
+tbody tr:hover{background:#faf9f8;}
+td{padding:9px 12px;color:var(--text);}
+.td-center{text-align:center;}
+.td-right{text-align:right;}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;white-space:nowrap;}
+.badge-green{background:#dff6dd;color:#107c10;}
+.badge-blue{background:#dce9f8;color:#0078d4;}
+.badge-orange{background:#fde7d3;color:#ca5010;}
+.badge-red{background:#fde7e9;color:#d13438;}
+.badge-purple{background:#ede8f4;color:#6264a7;}
+
+/* ── KPI ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+@media(max-width:768px){.kpi-grid{grid-template-columns:1fr 1fr;}}
+.kpi{background:#fff;border-radius:8px;border:1px solid var(--border);padding:16px 18px;border-left:4px solid;}
+.kpi-blue{border-left-color:#0078d4;}
+.kpi-green{border-left-color:#107c10;}
+.kpi-purple{border-left-color:#6264a7;}
+.kpi-orange{border-left-color:#ca5010;}
+.kpi-val{font-size:26px;font-weight:700;line-height:1;}
+.kpi-blue .kpi-val{color:#0078d4;}
+.kpi-green .kpi-val{color:#107c10;}
+.kpi-purple .kpi-val{color:#6264a7;}
+.kpi-orange .kpi-val{color:#ca5010;}
+.kpi-label{font-size:11px;color:var(--subtext);margin-top:5px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* ── ALERT ── */
+.alert{padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.alert-green{background:#dff6dd;color:#107c10;border:1px solid #a7d7a0;}
+.alert-blue{background:#dce9f8;color:#0078d4;border:1px solid #9dc4e8;}
+.alert-warn{background:#fde7d3;color:#ca5010;border:1px solid:#f4b9a0;}
+
+/* ── SECTION ── */
+.section-title{font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+
+/* ── WEEK VIEW ── */
+.week-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.week-display{background:#fff;border:1px solid var(--border);border-radius:6px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--primary);}
+.hours-chip{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;}
+.hours-ok{background:#dff6dd;color:#107c10;}
+.hours-low{background:#fde7d3;color:#ca5010;}
+.hours-zero{background:#f3f2f1;color:#605e5c;}
+
+/* ── APPROVAL STATUS ── */
+.status-row{display:flex;align-items:center;gap:8px;}
+.status-dot{width:8px;height:8px;border-radius:50%;}
+.dot-green{background:#107c10;}
+.dot-orange{background:#ca5010;}
+.dot-gray{background:#a19f9d;}
+
+/* ── REMINDER PANEL ── */
+.reminder-card{background:linear-gradient(135deg,#464775,#6264a7);border-radius:8px;padding:20px;color:#fff;margin-bottom:16px;}
+.reminder-card h3{font-size:15px;margin-bottom:6px;}
+.reminder-card p{font-size:12px;opacity:.85;margin-bottom:14px;}
+.reminder-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.reminder-item{background:rgba(255,255,255,.15);border-radius:6px;padding:12px;font-size:12px;}
+.reminder-item strong{display:block;font-size:13px;margin-bottom:3px;}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:20px;right:20px;background:#323130;color:#fff;
+  padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;
+  box-shadow:0 4px 20px rgba(0,0,0,.25);display:none;z-index:999;
+  animation:slideup .3s ease;
+}
+@keyframes slideup{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast-green{border-left:4px solid #107c10;}
+.toast-red{border-left:4px solid #d13438;}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:10px;padding:28px;width:460px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.2);}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:16px;color:var(--text);}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
+
+/* ── SUMMARY ROW ── */
+.summary-row{background:#f8f7f6;font-weight:600;}
+.summary-row td{border-top:2px solid var(--border);}
+
+/* ── PROGRESS ── */
+.progress-bar{height:6px;background:#e1dfdd;border-radius:3px;overflow:hidden;margin-top:4px;}
+.progress-fill{height:100%;border-radius:3px;background:var(--primary);transition:width .3s;}
+
+/* ── ROLE CHIPS ── */
+.role-chip{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.role-admin{background:#ede8f4;color:#6264a7;}
+.role-manager{background:#dce9f8;color:#0078d4;}
+.role-member{background:#f3f2f1;color:#605e5c;}
+
+/* ── MISSING POPUP ── */
+.popup-warn{border-left:5px solid #ca5010!important;}
+.popup-warn h3{color:#ca5010!important;}
+.popup-icon{font-size:36px;text-align:center;margin-bottom:10px;}
+
+/* ── PENDING REMINDERS ── */
+.pending-item{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#fff8f5;border:1px solid #fde7d3;border-radius:6px;margin-bottom:6px;}
+.pending-name{font-weight:600;font-size:13px;}
+.pending-email{font-size:11px;color:#605e5c;}
+.all-clear{text-align:center;padding:20px;color:#107c10;font-weight:600;background:#dff6dd;border-radius:6px;}
+
+/* ── POWER AUTOMATE ── */
+.pa-step{background:#f8f7f6;border-left:3px solid #6264a7;padding:10px 14px;border-radius:0 6px 6px 0;margin-bottom:8px;}
+.pa-step strong{display:block;color:#464775;font-size:12px;margin-bottom:3px;}
+.pa-step span{font-size:12px;color:#605e5c;}
+.pa-code{background:#1e1e2e;color:#a6e3a1;font-family:monospace;font-size:11px;padding:10px 14px;border-radius:6px;margin:6px 0;white-space:pre-wrap;word-break:break-all;}
+.copy-btn{background:#6264a7;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;}
+
+/* ── SYNC INDICATOR ── */
+.sync-pill{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:default;}
+.sync-ok{background:rgba(16,124,16,.25);color:#6fcf6f;}
+.sync-ing{background:rgba(0,120,212,.25);color:#7ec8ff;}
+.sync-err{background:rgba(209,52,56,.25);color:#ff9090;}
+.sync-dot{width:7px;height:7px;border-radius:50%;}
+.sync-ok .sync-dot{background:#6fcf6f;}
+.sync-ing .sync-dot{background:#7ec8ff;animation:blink .8s infinite;}
+.sync-err .sync-dot{background:#ff9090;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ── LOADING OVERLAY ── */
+#loading-overlay{
+  position:fixed;inset:0;background:rgba(14,25,41,.92);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:2000;color:#fff;
+}
+.spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,.15);
+  border-top-color:#6264a7;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── SETUP SCREEN ── */
+#setup-screen{
+  display:none;position:fixed;inset:0;background:linear-gradient(135deg,#0d1929 0%,#1a2f4a 100%);
+  align-items:center;justify-content:center;z-index:1500;
+}
+#setup-screen.open{display:flex;}
+.setup-card{background:#0d1929;border:1px solid #1e3a5f;border-radius:14px;
+  padding:36px;width:500px;max-width:95vw;box-shadow:0 16px 60px rgba(0,0,0,.5);}
+.setup-card h2{font-size:18px;font-weight:700;color:#e6edf3;margin-bottom:6px;}
+.setup-card p{font-size:12px;color:#8b9cb5;margin-bottom:20px;line-height:1.6;}
+.setup-step{background:#111f33;border-radius:8px;padding:14px 16px;margin-bottom:10px;font-size:12px;color:#c9d1d9;line-height:1.7;}
+.setup-step b{color:#2ECC71;}
+.setup-input{width:100%;padding:10px 12px;background:#060d17;border:1.5px solid #1e3a5f;
+  border-radius:6px;color:#e6edf3;font-family:inherit;font-size:13px;outline:none;
+  transition:border-color .2s;margin-top:6px;}
+.setup-input:focus{border-color:#6264a7;}
+.setup-label{font-size:10px;font-weight:700;color:#4a6fa5;text-transform:uppercase;
+  letter-spacing:.8px;display:block;margin-top:14px;margin-bottom:2px;}
+.btn-setup{width:100%;padding:12px;background:#6264a7;color:#fff;border:none;border-radius:7px;
+  font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:18px;transition:background .2s;}
+.btn-setup:hover{background:#464775;}
+.setup-or{text-align:center;font-size:11px;color:#4a6fa5;margin:12px 0;}
+.btn-setup-local{width:100%;padding:10px;background:transparent;color:#4a6fa5;border:1px solid #1e3a5f;
+  border-radius:7px;font-family:inherit;font-size:12px;cursor:pointer;transition:all .2s;}
+.btn-setup-local:hover{border-color:#6264a7;color:#8b9cb5;}
+</style>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="display:flex">
+  <div class="spinner"></div>
+  <div id="loading-msg" style="font-size:13px;color:#8b9cb5">Connecting to Team Timesheet...</div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <h2>🔗 Connect Shared Database</h2>
+    <p>To let your whole team share data in real time, connect a free JSONBin cloud database.<br>
+    The admin does this once — then shares the credentials with the team.</p>
+
+    <div class="setup-step">
+      <b>Step 1:</b> Go to <b>jsonbin.io</b> → click <b>Sign Up Free</b> (no credit card needed)<br>
+      <b>Step 2:</b> After login, click your profile icon → <b>API Keys</b> → copy your <b>Master Key</b><br>
+      <b>Step 3:</b> Click <b>Bins</b> → <b>Create Bin</b> → paste <code>{}</code> as content → click <b>Create</b><br>
+      <b>Step 4:</b> Copy the <b>Bin ID</b> from the URL or the bin details panel<br>
+      <b>Step 5:</b> Paste both below and click Connect
+    </div>
+
+    <span class="setup-label">JSONBin Master Key</span>
+    <input id="setup-key" class="setup-input" type="password" placeholder="$2b$10$..."/>
+    <span class="setup-label">Bin ID</span>
+    <input id="setup-bin" class="setup-input" placeholder="64a1b2c3d4e5f6..."/>
+
+    <button class="btn-setup" onclick="connectCloud()">🔗 Connect & Continue</button>
+    <div class="setup-or">— or —</div>
+    <button class="btn-setup-local" onclick="useLocalMode()">Continue in Local Mode (single device only)</button>
+    <p style="margin-top:12px;font-size:10px;color:#2a4a6a;text-align:center">
+      Your credentials are stored only on this device. JSONBin free tier supports up to 10,000 requests/month.
+    </p>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">⏱</div>
+      <h1>Team Timesheet</h1>
+      <p>Powered by Microsoft Teams</p>
+    </div>
+    <div class="fld" style="margin-bottom:14px">
+      <label>Select Your Name</label>
+      <select id="login-user">
+        <option value="">— Choose your name —</option>
+      </select>
+    </div>
+    <div class="fld" style="margin-bottom:6px">
+      <label>Or enter your email</label>
+      <input id="login-email" type="email" placeholder="yourname@company.com"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <p style="font-size:11px;color:#a19f9d;text-align:center;margin-top:14px;">
+      Connected to Microsoft 365 · Data shared across team
+    </p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <span style="font-size:22px">⏱</span>
+    <div class="topbar-title">Team Timesheet</div>
+    <div class="topbar-user">
+      <div class="avatar" id="user-avatar">U</div>
+      <div>
+        <div id="user-name-display" style="font-weight:600;font-size:13px">—</div>
+        <div class="topbar-dept" id="user-dept-display">—</div>
+      </div>
+    </div>
+    <button class="btn-signout" onclick="doSignOut()">Sign out</button>
+    <div id="sync-pill" class="sync-pill sync-ok" title="Cloud sync status">
+      <div class="sync-dot"></div><span id="sync-label">Synced</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('my-time',this)">📋 My Timesheet</div>
+    <div class="tab" onclick="showTab('team-view',this)">👥 Team View</div>
+    <div class="tab" onclick="showTab('projects',this)">📁 Projects</div>
+    <div class="tab" onclick="showTab('reports',this)">📊 Reports</div>
+    <div class="tab" id="admin-tab" style="display:none" onclick="showTab('admin',this)">⚙️ Admin</div>
+  </div>
+
+  <div class="main">
+
+    <!-- MY TIMESHEET -->
+    <div class="page active" id="page-my-time">
+      <div class="kpi-grid" id="my-kpis"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Log Time Entry</div>
+          <div style="font-size:12px;color:var(--subtext)" id="entry-date-lbl"></div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid fg-3" style="margin-bottom:12px">
+            <div class="fld"><label>Date</label><input type="date" id="e-date"/></div>
+            <div class="fld"><label>Project</label>
+              <select id="e-proj"><option value="">— Select Project —</option></select>
+            </div>
+            <div class="fld"><label>Activity Code</label>
+              <select id="e-act">
+                <option value="">— Select Activity —</option>
+                <option value="DEV">DEV – Development</option>
+                <option value="TST">TST – Testing & QA</option>
+                <option value="MTG">MTG – Meetings</option>
+                <option value="DOC">DOC – Documentation</option>
+                <option value="ANA">ANA – Analysis</option>
+                <option value="TRN">TRN – Training</option>
+                <option value="SUP">SUP – Support</option>
+                <option value="MGT">MGT – Management</option>
+                <option value="REV">REV – Review</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid fg-3">
+            <div class="fld"><label>Hours</label><input type="number" id="e-hrs" min="0.5" max="24" step="0.5" value="8"/></div>
+            <div class="fld" style="grid-column:span 2"><label>Description / Task</label>
+              <input type="text" id="e-desc" placeholder="What did you work on today?"/>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="addEntry()">✚ Add Entry</button>
+            <button class="btn btn-gray" onclick="clearForm()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">My Entries</div>
+          <div class="week-nav">
+            <button class="btn btn-gray btn-sm" onclick="shiftWeek(-1)">◀</button>
+            <div class="week-display" id="week-range-lbl">This Week</div>
+            <button class="btn btn-gray btn-sm" onclick="shiftWeek(1)">▶</button>
+            <button class="btn btn-outline btn-sm" onclick="goToday()">Today</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Date</th><th>Project</th><th>Activity</th>
+                <th>Hours</th><th>Description</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="my-entries-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEAM VIEW -->
+    <div class="page" id="page-team-view">
+      <div class="reminder-card">
+        <h3>📬 Team Status — Week of <span id="team-week-lbl">—</span></h3>
+        <p>Overview of who has submitted timesheets this week. Reminders are sent automatically every Friday at 4 PM via Teams & Outlook.</p>
+        <div class="reminder-grid" id="team-status-grid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Team Time Entries</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="team-dept-filter" onchange="loadTeamView()" style="padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:12px">
+              <option value="All">All Departments</option>
+            </select>
+            <select id="team-week-filter" onchange="loadTeamView()" style="padding:6px 10px;border:1px solid var(--border);border-radius:5px;font-size:12px">
+              <option value="this">This Week</option>
+              <option value="last">Last Week</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Employee</th><th>Department</th><th>Project</th>
+                <th>Activity</th><th>Date</th><th>Hours</th><th>Description</th>
+              </tr></thead>
+              <tbody id="team-entries-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="page" id="page-projects">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="section-title" style="margin:0">Projects</div>
+        <button class="btn btn-primary btn-sm" onclick="openProjectModal()">✚ New Project</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Code</th><th>Project Name</th><th>Department</th>
+            <th>Status</th><th>Total Hours</th><th>Members</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="projects-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="form-grid fg-4" style="margin-bottom:16px;background:#fff;padding:14px 16px;border-radius:8px;border:1px solid var(--border)">
+        <div class="fld"><label>From</label><input type="date" id="r-from"/></div>
+        <div class="fld"><label>To</label><input type="date" id="r-to"/></div>
+        <div class="fld"><label>Department</label>
+          <select id="r-dept"><option value="All">All Departments</option></select>
+        </div>
+        <div class="fld"><label>Project</label>
+          <select id="r-proj"><option value="All">All Projects</option></select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="btn btn-primary" onclick="runReport()">🔍 Run Report</button>
+        <button class="btn btn-green" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-outline" onclick="sendWeeklySummary()">📧 Send Weekly Summary</button>
+      </div>
+
+      <div class="kpi-grid" id="report-kpis" style="display:none"></div>
+
+      <div class="card" id="report-card" style="display:none">
+        <div class="card-header"><div class="card-title">Report Results</div></div>
+        <div class="card-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Employee</th><th>Department</th><th>Project</th>
+                <th>Activity</th><th>Date</th><th>Hours</th><th>Description</th>
+              </tr></thead>
+              <tbody id="report-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly by employee -->
+      <div class="card" id="weekly-card" style="display:none">
+        <div class="card-header"><div class="card-title">Weekly Hours by Employee</div></div>
+        <div class="card-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr id="weekly-head"></tr></thead>
+              <tbody id="weekly-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="page" id="page-admin">
+
+      <!-- PENDING REMINDERS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚠️ Pending Reminders — Did Not Fill Yesterday</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-gray btn-sm" onclick="copyPendingEmails()">📋 Copy Emails</button>
+            <button class="btn btn-outline btn-sm" onclick="mailtoReminder()">📧 Open in Outlook</button>
+          </div>
+        </div>
+        <div class="card-body" id="pending-reminders-body">
+          <div class="all-clear">✅ Everyone is up to date!</div>
+        </div>
+      </div>
+
+      <!-- TEAM MEMBERS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 Team Members</div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid fg-4" style="margin-bottom:12px">
+            <div class="fld"><label>Full Name</label><input id="a-name" placeholder="John Smith"/></div>
+            <div class="fld"><label>Email</label><input id="a-email" placeholder="john@company.com"/></div>
+            <div class="fld"><label>Department</label>
+              <select id="a-dept">
+                <option>Engineering</option><option>Finance</option>
+                <option>HR</option><option>IT</option><option>Operations</option>
+                <option>Sales</option><option>Marketing</option>
+              </select>
+            </div>
+            <div class="fld"><label>Role</label>
+              <select id="a-role">
+                <option value="member">Member</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" onclick="addMember()">✚ Add Member</button>
+            <button class="btn btn-outline btn-sm" onclick="openBulkModal()">📋 Bulk Upload CSV</button>
+            <button class="btn btn-gray btn-sm" onclick="downloadMemberTemplate()">⬇ Download Template</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding-top:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>This Week</th><th>Actions</th></tr></thead>
+              <tbody id="admin-members-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY CODES -->
+      <div class="card admin-section">
+        <div class="card-header">
+          <div class="card-title">🏷️ Activity Codes</div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid fg-3" style="margin-bottom:10px">
+            <div class="fld"><label>Code</label><input id="ac-code" placeholder="e.g. DEV"/></div>
+            <div class="fld"><label>Description</label><input id="ac-desc" placeholder="e.g. Development"/></div>
+            <div class="fld"><label>Category</label><input id="ac-cat" placeholder="e.g. Technical"/></div>
+          </div>
+          <input type="hidden" id="ac-edit-id"/>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" onclick="saveActivityCode()">✚ Save Code</button>
+            <button class="btn btn-gray btn-sm" onclick="clearActivityCode()">Clear</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding-top:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Code</th><th>Description</th><th>Category</th><th>Actions</th></tr></thead>
+              <tbody id="activity-codes-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALL TIME ENTRIES (ADMIN) -->
+      <div class="card admin-section">
+        <div class="card-header">
+          <div class="card-title">🗂️ All Time Entries (Admin)</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="adm-emp-filter" onchange="loadAdminEntries()" style="padding:6px 10px;border:1px solid #e1dfdd;border-radius:5px;font-size:12px">
+              <option value="All">All Employees</option>
+            </select>
+            <select id="adm-week-filter" onchange="loadAdminEntries()" style="padding:6px 10px;border:1px solid #e1dfdd;border-radius:5px;font-size:12px">
+              <option value="this">This Week</option>
+              <option value="last">Last Week</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Employee</th><th>Project</th><th>Activity</th><th>Hours</th><th>Description</th><th>Actions</th></tr></thead>
+              <tbody id="admin-entries-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLOUD DATABASE STATUS -->
+      <div class="card admin-section">
+        <div class="card-header">
+          <div class="card-title">☁️ Shared Cloud Database</div>
+          <span id="admin-cloud-badge" class="badge badge-green">Connected</span>
+        </div>
+        <div class="card-body">
+          <div id="admin-cloud-info" style="font-size:12px;color:#605e5c;margin-bottom:12px;line-height:1.7"></div>
+          <div class="btn-row">
+            <button class="btn btn-outline btn-sm" onclick="forceSyncNow()">🔄 Sync Now</button>
+            <button class="btn btn-red btn-sm" onclick="resetCloudConnection()">🔌 Change Database</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- POWER AUTOMATE GUIDE -->
+      <div class="card admin-section">
+        <div class="card-header">
+          <div class="card-title">⚡ Power Automate — Daily 11am Email Reminder Setup</div>
+          <span class="badge badge-green">Free with Microsoft 365</span>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-blue" style="margin-bottom:16px">
+            📧 This flow checks every morning at <strong>11am</strong> who has not logged hours for the previous working day and sends them an automatic email. It runs daily until they fill in the timesheet.
+          </div>
+
+          <div class="pa-step">
+            <strong>Step 1 — Create a SharePoint List called "TimesheetSubmissions"</strong>
+            <span>Go to your SharePoint site → New → List. Add columns: <b>EmployeeEmail</b> (text), <b>SubmitDate</b> (date), <b>Hours</b> (number). Each time an entry is saved, it appears here.</span>
+          </div>
+          <div class="pa-step">
+            <strong>Step 2 — Go to make.powerautomate.com</strong>
+            <span>Sign in with your Microsoft 365 account → Click <b>Create</b> → <b>Scheduled cloud flow</b></span>
+          </div>
+          <div class="pa-step">
+            <strong>Step 3 — Set the trigger</strong>
+            <span>Flow name: <b>Timesheet Daily Reminder</b> · Start: Tomorrow · Repeat every: <b>1 Day</b> at <b>11:00 AM</b> · Click Create</span>
+          </div>
+          <div class="pa-step">
+            <strong>Step 4 — Add "Get items" action from SharePoint</strong>
+            <span>Site: your SharePoint site · List: TimesheetSubmissions · Filter Query: <code>SubmitDate eq '[yesterday's date]'</code></span>
+          </div>
+          <div class="pa-step">
+            <strong>Step 5 — Add "Apply to each" → check if email is in results</strong>
+            <span>Loop through your team member list. For each member, use a <b>Condition</b>: "Does their email appear in yesterday's submissions?" → If NO → send reminder email.</span>
+          </div>
+          <div class="pa-step">
+            <strong>Step 6 — Add "Send an email (V2)" for the NO branch</strong>
+            <span>To: <b>[member email]</b> · Subject: <b>⏱ Reminder: Please fill your timesheet</b></span>
+          </div>
+
+          <div style="margin-top:12px">
+            <div style="font-size:11px;font-weight:600;color:#605e5c;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Copy-paste email body:</div>
+            <div class="pa-code" id="email-template-text">Hi [Employee Name],
+
+This is an automated reminder that your timesheet for [Yesterday's Date] has not been submitted yet.
+
+Please log your hours here:
+[YOUR TEAMS TAB URL]
+
+You will continue to receive this reminder each morning at 11am until your timesheet is filled.
+
+If you have a leave or holiday, please inform your manager so they can mark it accordingly.
+
+Thank you,
+HR / Management Team</div>
+            <button class="copy-btn" onclick="copyEmailTemplate()">📋 Copy Email Body</button>
+          </div>
+
+          <div style="margin-top:16px">
+            <div style="font-size:11px;font-weight:600;color:#605e5c;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Today's pending list (for manual use):</div>
+            <div id="pa-pending-list" style="font-size:12px;background:#f8f7f6;padding:10px;border-radius:6px;font-family:monospace;min-height:40px"></div>
+            <button class="copy-btn" style="margin-top:6px" onclick="copyPendingEmails()">📋 Copy Email List</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- PROJECT MODAL -->
+<div class="modal-bg" id="proj-modal">
+  <div class="modal">
+    <h3 id="proj-modal-title">Add New Project</h3>
+    <input type="hidden" id="m-id" value=""/>
+    <div class="form-grid fg-2" style="margin-bottom:12px">
+      <div class="fld"><label>Project Code</label><input id="m-code" placeholder="ERP-001"/></div>
+      <div class="fld"><label>Project Name</label><input id="m-name" placeholder="ERP System v2"/></div>
+    </div>
+    <div class="form-grid fg-2" style="margin-bottom:12px">
+      <div class="fld"><label>Department</label>
+        <select id="m-dept">
+          <option>Engineering</option><option>Finance</option>
+          <option>HR</option><option>IT</option><option>Operations</option>
+        </select>
+      </div>
+      <div class="fld"><label>Status</label>
+        <select id="m-status">
+          <option>Active</option><option>On Hold</option><option>Completed</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('proj-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- BULK UPLOAD MODAL -->
+<div class="modal-bg" id="bulk-modal">
+  <div class="modal" style="width:620px;max-width:96vw">
+    <h3>📋 Bulk Upload Team Members</h3>
+
+    <div class="alert alert-blue" style="margin-bottom:14px">
+      Upload a CSV file or paste rows below. Required columns: <strong>Name, Email, Department, Role</strong>
+    </div>
+
+    <!-- Step 1: Input -->
+    <div id="bulk-step-1">
+      <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end">
+        <div class="fld" style="flex:1;margin:0">
+          <label>Upload CSV File</label>
+          <input type="file" id="bulk-file" accept=".csv,.txt"
+            style="padding:6px;font-size:12px"
+            onchange="readBulkFile(this)"/>
+        </div>
+        <span style="font-size:12px;color:#605e5c;padding-bottom:8px">— or —</span>
+      </div>
+      <div class="fld" style="margin-bottom:12px">
+        <label>Paste CSV Rows (one per line)</label>
+        <textarea id="bulk-paste" rows="7" placeholder="Name,Email,Department,Role
+John Smith,john@company.com,Engineering,member
+Jane Doe,jane@company.com,Finance,manager
+Bob Admin,bob@company.com,IT,admin"></textarea>
+      </div>
+      <div class="modal-footer" style="margin-top:0">
+        <button class="btn btn-gray" onclick="closeModal('bulk-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="previewBulk()">Preview →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Preview -->
+    <div id="bulk-step-2" style="display:none">
+      <div id="bulk-summary" style="margin-bottom:10px;font-size:13px"></div>
+      <div style="max-height:280px;overflow-y:auto;border:1px solid #e1dfdd;border-radius:6px">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#f8f7f6;position:sticky;top:0">
+              <th style="padding:8px 10px;text-align:left;border-bottom:1px solid #e1dfdd">#</th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:1px solid #e1dfdd">Name</th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:1px solid #e1dfdd">Email</th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:1px solid #e1dfdd">Department</th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:1px solid #e1dfdd">Role</th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:1px solid #e1dfdd">Status</th>
+            </tr>
+          </thead>
+          <tbody id="bulk-preview-body"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-gray" onclick="backBulk()">← Back</button>
+        <button class="btn btn-green" id="bulk-import-btn" onclick="confirmBulkImport()">✚ Import Members</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MISSING TIMESHEET POPUP -->
+<div class="modal-bg" id="missing-popup">
+  <div class="modal popup-warn">
+    <div class="popup-icon">⚠️</div>
+    <h3 id="missing-popup-title">You didn't log hours yesterday</h3>
+    <p id="missing-popup-body" style="font-size:13px;color:#605e5c;margin-bottom:8px;line-height:1.6"></p>
+    <div style="background:#fff8f5;border-radius:6px;padding:10px 14px;font-size:12px;color:#ca5010;margin-bottom:16px">
+      📧 A reminder email will also be sent to your manager if this is not filled by <strong>11:00 AM today</strong>.
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('missing-popup')">Dismiss</button>
+      <button class="btn" style="background:#ca5010;color:#fff" onclick="fillNow()">Fill Now →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN EDIT ENTRY MODAL -->
+<div class="modal-bg" id="edit-entry-modal">
+  <div class="modal">
+    <h3>Edit Time Entry</h3>
+    <input type="hidden" id="ee-id"/>
+    <div class="form-grid fg-2" style="margin-bottom:12px">
+      <div class="fld"><label>Date</label><input type="date" id="ee-date"/></div>
+      <div class="fld"><label>Hours</label><input type="number" id="ee-hrs" min="0.5" max="24" step="0.5"/></div>
+    </div>
+    <div class="form-grid fg-2" style="margin-bottom:12px">
+      <div class="fld"><label>Project</label>
+        <select id="ee-proj"></select>
+      </div>
+      <div class="fld"><label>Activity Code</label>
+        <select id="ee-act">
+          <option value="DEV">DEV – Development</option>
+          <option value="TST">TST – Testing & QA</option>
+          <option value="MTG">MTG – Meetings</option>
+          <option value="DOC">DOC – Documentation</option>
+          <option value="ANA">ANA – Analysis</option>
+          <option value="TRN">TRN – Training</option>
+          <option value="SUP">SUP – Support</option>
+          <option value="MGT">MGT – Management</option>
+          <option value="REV">REV – Review</option>
+        </select>
+      </div>
+    </div>
+    <div class="fld"><label>Description</label><input type="text" id="ee-desc"/></div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('edit-entry-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAdminEntry()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CLOUD DATA LAYER — JSONBin.io shared database
+// ══════════════════════════════════════════════════════════
+let STATE = {};           // in-memory shared state
+let cloudMode = false;    // true = JSONBin, false = localStorage fallback
+let syncTimer = null;
+let pendingSave = false;
+let saveDebounce = null;
+
+const LS = {
+  get:(k,d)=>{try{const v=localStorage.getItem('ts_'+k);return v?JSON.parse(v):d;}catch{return d;}},
+  set:(k,v)=>{try{localStorage.setItem('ts_'+k,JSON.stringify(v));}catch{}}
+};
+
+// Sync status UI
+function setSyncStatus(status, label){
+  const pill=document.getElementById('sync-pill');
+  const lbl=document.getElementById('sync-label');
+  if(!pill) return;
+  pill.className='sync-pill sync-'+status;
+  pill.innerHTML=`<div class="sync-dot"></div><span>${label}</span>`;
+}
+
+// JSONBin helpers
+function getBinCreds(){ return {key:LS.get('cloud_key',''), bin:LS.get('cloud_bin','')}; }
+
+async function cloudFetch(method, body){
+  const {key,bin}=getBinCreds();
+  if(!key||!bin) return null;
+  try{
+    const opts={
+      method,
+      headers:{'Content-Type':'application/json','X-Master-Key':key},
+      mode:'cors'
+    };
+    if(body) opts.body=JSON.stringify(body);
+    const url=method==='GET'
+      ?`https://api.jsonbin.io/v3/b/${bin}/latest`
+      :`https://api.jsonbin.io/v3/b/${bin}`;
+    const res=await fetch(url,opts);
+    if(!res.ok){
+      console.error('JSONBin error:',res.status);
+      return null;
+    }
+    const data=await res.json();
+    return data.record||data;
+  }catch(e){
+    console.error('Cloud fetch error:',e.message);
+    return null;
+  }
+}
+
+async function loadFromCloud(){
+  setSyncStatus('ing','Syncing...');
+  const data=await cloudFetch('GET');
+  if(!data){setSyncStatus('err','Offline');return false;}
+  if(data && typeof data==='object' && Object.keys(data).length>0){
+    STATE=data;
+  }
+  setSyncStatus('ok','Live ✓');
+  return true;
+}
+
+async function saveToCloud(){
+  if(!cloudMode) return;
+  setSyncStatus('ing','Saving...');
+  const res=await cloudFetch('PUT',STATE);
+  if(!res){setSyncStatus('err','Save failed');return;}
+  setSyncStatus('ok','Saved ✓');
+  setTimeout(()=>setSyncStatus('ok','Live ✓'),1500);
+}
+
+// Debounced save — batches rapid changes into one request
+function scheduleSave(){
+  if(!cloudMode) return;
+  clearTimeout(saveDebounce);
+  saveDebounce=setTimeout(()=>saveToCloud(),800);
+}
+
+// Auto-refresh every 30 seconds to pick up changes from other users
+function startSyncLoop(){
+  if(syncTimer) clearInterval(syncTimer);
+  syncTimer=setInterval(async()=>{
+    if(!cloudMode||!currentUser) return;
+    const before=JSON.stringify(STATE.entries||[]);
+    await loadFromCloud();
+    const after=JSON.stringify(STATE.entries||[]);
+    // Refresh UI only if data changed
+    if(before!==after){
+      loadMyTimesheet();
+      if(document.querySelector('.tab.active')?.getAttribute('onclick')?.includes('team-view'))
+        loadTeamView();
+      if(document.querySelector('.tab.active')?.getAttribute('onclick')?.includes('reports'))
+        loadReportFilters();
+    }
+  },30000);
+}
+
+// DB interface — keeps all existing code working unchanged
+const DB = {
+  get:(k,d=[])=> STATE[k]!==undefined ? STATE[k] : d,
+  set:(k,v)=>{ STATE[k]=v; scheduleSave(); }
+};
+
+// ── CLOUD SETUP ──────────────────────────────────────────────
+async function connectCloud(){
+  const key=document.getElementById('setup-key').value.trim();
+  const bin=document.getElementById('setup-bin').value.trim();
+  if(!key||!bin){alert('Please enter both the Master Key and Bin ID.');return;}
+  document.getElementById('loading-msg').textContent='Connecting to your JSONBin...';
+  document.getElementById('loading-overlay').style.display='flex';
+  document.getElementById('setup-screen').classList.remove('open');
+  LS.set('cloud_key',key); LS.set('cloud_bin',bin);
+  cloudMode=true;
+  const ok=await loadFromCloud();
+  if(!ok){
+    LS.set('cloud_key',''); LS.set('cloud_bin','');
+    cloudMode=false;
+    document.getElementById('loading-overlay').style.display='none';
+    document.getElementById('setup-screen').classList.add('open');
+    alert('Could not connect. Please check your Master Key and Bin ID and try again.');
+    return;
+  }
+  // First time — seed the bin
+  if(!STATE.seeded) seedIfEmpty();
+  document.getElementById('loading-overlay').style.display='none';
+  startSyncLoop();
+  initLogin();
+}
+
+function useLocalMode(){
+  LS.set('cloud_mode','local');
+  cloudMode=false;
+  document.getElementById('setup-screen').classList.remove('open');
+  document.getElementById('loading-overlay').style.display='none';
+  STATE={};
+  seedIfEmpty();
+  setSyncStatus('err','Local only');
+  initLogin();
+}
+
+// ── RESET CLOUD CREDENTIALS (for admin) ──
+function resetCloudConnection(){
+  if(!confirm('Disconnect from cloud database? You will be asked to reconnect on next load.')) return;
+  LS.set('cloud_key',''); LS.set('cloud_bin',''); LS.set('cloud_mode','');
+  toast('Cloud disconnected. Reloading...','red');
+  setTimeout(()=>location.reload(),1500);
+}
+
+// ── APP STARTUP ──────────────────────────────────────────────
+// Credentials pre-configured — no setup screen needed
+const PRECONFIGURED_KEY = '$2a$10$UfqVjDQ0hxghZk49itcWuuvLd9JMPyQp7DZfP1PHRy/U.jifIQb/i';
+const PRECONFIGURED_BIN = '69c68fdeb7ec241ddcacc70b';
+
+async function appStart(){
+  // Hide login, show loading
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('loading-overlay').style.display='flex';
+  document.getElementById('loading-msg').textContent='Connecting to Team Timesheet...';
+
+  // Always use pre-configured credentials
+  LS.set('cloud_key', PRECONFIGURED_KEY);
+  LS.set('cloud_bin', PRECONFIGURED_BIN);
+  cloudMode = true;
+
+  document.getElementById('loading-msg').textContent='Loading team data...';
+
+  try {
+    const ok = await loadFromCloud();
+    if(ok){
+      if(!STATE.seeded) seedIfEmpty();
+      startSyncLoop();
+      setSyncStatus('ok','Live ✓');
+    } else {
+      // Offline fallback — use local seed data
+      cloudMode = false;
+      STATE = {};
+      seedIfEmpty();
+      setSyncStatus('err','Offline — local data');
+    }
+  } catch(e) {
+    // Any error — fall back to local
+    cloudMode = false;
+    STATE = {};
+    seedIfEmpty();
+    setSyncStatus('err','Offline — local data');
+  }
+
+  document.getElementById('loading-overlay').style.display='none';
+  initLogin();
+}
+
+// ── SEED DATA ──
+function seedIfEmpty(){
+  if(DB.get('seeded',false)) return;
+  DB.set('members',[
+    {id:1,name:'Rahul Sharma',  email:'rahul@company.com',  dept:'Engineering',role:'member'},
+    {id:2,name:'Priya Patel',   email:'priya@company.com',  dept:'Finance',    role:'manager'},
+    {id:3,name:'Ahmed Khan',    email:'ahmed@company.com',  dept:'IT',         role:'member'},
+    {id:4,name:'Sneha Iyer',    email:'sneha@company.com',  dept:'HR',         role:'manager'},
+    {id:5,name:'Vikram Nair',   email:'vikram@company.com', dept:'Operations', role:'member'},
+    {id:6,name:'Meera Das',     email:'meera@company.com',  dept:'Engineering',role:'member'},
+    {id:7,name:'Arjun Mehta',   email:'arjun@company.com',  dept:'IT',         role:'admin'},
+    {id:8,name:'Kavya Reddy',   email:'kavya@company.com',  dept:'Finance',    role:'member'},
+  ]);
+  DB.set('projects',[
+    {id:1,code:'ERP-002',name:'ERP System v2',   dept:'Engineering',status:'Active'},
+    {id:2,code:'NET-001',name:'Network Upgrade', dept:'IT',         status:'Active'},
+    {id:3,code:'CLD-003',name:'Cloud Migration', dept:'IT',         status:'Active'},
+    {id:4,code:'AUD-001',name:'Year-End Audit',  dept:'Finance',    status:'Active'},
+    {id:5,code:'HR-002', name:'Onboarding Portal',dept:'HR',        status:'Active'},
+    {id:6,code:'OPS-005',name:'Supply Chain App',dept:'Operations', status:'Active'},
+  ]);
+  DB.set('activity_codes',[
+    {id:'DEV',desc:'Development',cat:'Technical'},
+    {id:'TST',desc:'Testing & QA',cat:'Technical'},
+    {id:'MTG',desc:'Meetings',cat:'General'},
+    {id:'DOC',desc:'Documentation',cat:'General'},
+    {id:'ANA',desc:'Analysis',cat:'Technical'},
+    {id:'TRN',desc:'Training',cat:'General'},
+    {id:'SUP',desc:'Support',cat:'Operations'},
+    {id:'MGT',desc:'Management',cat:'General'},
+    {id:'REV',desc:'Review',cat:'General'},
+  ]);
+  const today=new Date(); const fmt=d=>d.toISOString().slice(0,10);
+  const mon=new Date(today); mon.setDate(today.getDate()-today.getDay()+1);
+  const entries=[
+    {id:101,uid:1,proj:'ERP System v2',   act:'DEV',hrs:8,  date:fmt(mon),desc:'Backend API module'},
+    {id:102,uid:1,proj:'ERP System v2',   act:'MTG',hrs:2,  date:fmt(new Date(mon.getTime()+86400000)),desc:'Sprint planning'},
+    {id:103,uid:2,proj:'Year-End Audit',  act:'ANA',hrs:6,  date:fmt(mon),desc:'Financial analysis'},
+    {id:104,uid:3,proj:'Network Upgrade', act:'TST',hrs:7.5,date:fmt(mon),desc:'Firewall testing'},
+    {id:105,uid:4,proj:'Onboarding Portal',act:'DOC',hrs:4, date:fmt(mon),desc:'Policy docs'},
+    {id:106,uid:6,proj:'ERP System v2',   act:'DEV',hrs:8,  date:fmt(mon),desc:'UI components'},
+    {id:107,uid:7,proj:'Cloud Migration', act:'ANA',hrs:8,  date:fmt(mon),desc:'Cost sizing'},
+  ];
+  DB.set('entries',entries);
+  DB.set('seeded',true);
+}
+
+// ── STATE ──
+let currentUser=null, currentWeekOffset=0;
+
+// ── PERMISSIONS ──
+const isAdmin   = ()=> currentUser && currentUser.role==='admin';
+const isManager = ()=> currentUser && (currentUser.role==='manager'||currentUser.role==='admin');
+const isMember  = ()=> currentUser && currentUser.role==='member';
+
+// ── UTILS ──
+function getWeekDates(offset=0){
+  const now=new Date();
+  const mon=new Date(now); mon.setDate(now.getDate()-now.getDay()+1+offset*7);
+  const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+  return{mon,sun,
+    monStr:mon.toISOString().slice(0,10),
+    sunStr:sun.toISOString().slice(0,10),
+    label:`${mon.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})} – ${sun.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}`
+  };
+}
+function fmtDate(d){return new Date(d+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function toast(msg,type='green'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast-'+type; t.style.display='block';
+  setTimeout(()=>t.style.display='none',3000);
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function actBadge(code){
+  const map={DEV:'blue',TST:'green',MTG:'orange',DOC:'blue',ANA:'purple',TRN:'orange',SUP:'red',MGT:'orange',REV:'purple'};
+  return `<span class="badge badge-${map[code]||'blue'}">${code}</span>`;
+}
+function statusBadge(s){
+  const map={Active:'green','On Hold':'orange',Completed:'purple',Inactive:'red'};
+  return `<span class="badge badge-${map[s]||'blue'}">${s}</span>`;
+}
+function roleBadge(r){
+  return `<span class="role-chip role-${r}">${r}</span>`;
+}
+function getYesterday(){
+  const d=new Date(); d.setDate(d.getDate()-1);
+  // skip Sunday(0) and Saturday(6) — go to Friday
+  if(d.getDay()===0) d.setDate(d.getDate()-2);
+  if(d.getDay()===6) d.setDate(d.getDate()-1);
+  return d.toISOString().slice(0,10);
+}
+
+// ── LOGIN ──
+function initLogin(){
+  seedIfEmpty();
+  const members=DB.get('members');
+  const sel=document.getElementById('login-user');
+  sel.innerHTML='<option value="">— Choose your name —</option>';
+  members.forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m.id; o.textContent=`${m.name} (${m.email})`;
+    sel.appendChild(o);
+  });
+}
+
+function doLogin(){
+  const uid=parseInt(document.getElementById('login-user').value);
+  const emailInput=document.getElementById('login-email').value.trim();
+  const members=DB.get('members');
+  let user=null;
+  if(uid) user=members.find(m=>m.id===uid);
+  else if(emailInput) user=members.find(m=>m.email.toLowerCase()===emailInput.toLowerCase());
+  if(!user){
+    if(emailInput){
+      user={id:Date.now(),name:emailInput.split('@')[0],email:emailInput,dept:'General',role:'member'};
+      members.push(user); DB.set('members',members);
+    } else { toast('Please select your name or enter your email','red'); return; }
+  }
+  currentUser=user;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-name-display').textContent=user.name;
+  document.getElementById('user-dept-display').textContent=`${user.dept} · ${user.role}`;
+  document.getElementById('user-avatar').textContent=user.name[0].toUpperCase();
+
+  // ── Tab visibility by role ──
+  const tabs={
+    'team-view': isManager(),
+    'reports':   isManager(),
+    'admin':     isAdmin()
+  };
+  Object.entries(tabs).forEach(([tid,show])=>{
+    // find tab by onclick attribute containing the id
+    document.querySelectorAll('.tab').forEach(t=>{
+      if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes(`'${tid}'`))
+        t.style.display=show?'':'none';
+    });
+  });
+
+  initApp();
+  // Check missing yesterday after short delay
+  setTimeout(checkMissingYesterday, 600);
+}
+
+function doSignOut(){
+  currentUser=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  initLogin();
+}
+
+// ── MISSING YESTERDAY POPUP ──
+function checkMissingYesterday(){
+  const yday=getYesterday();
+  const entries=DB.get('entries');
+  const hasEntry=entries.some(e=>e.uid===currentUser.id && e.date===yday);
+  if(!hasEntry){
+    document.getElementById('missing-popup-title').textContent=
+      `You didn't log hours for ${fmtDate(yday)}`;
+    document.getElementById('missing-popup-body').textContent=
+      `Hi ${currentUser.name.split(' ')[0]}, your timesheet for ${fmtDate(yday)} (yesterday) is missing. Please fill it in to keep your records accurate.`;
+    document.getElementById('missing-popup').classList.add('open');
+  }
+}
+
+function fillNow(){
+  closeModal('missing-popup');
+  document.getElementById('e-date').value=getYesterday();
+  // Switch to My Timesheet tab
+  document.querySelectorAll('.tab').forEach(t=>{
+    if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'my-time'"))
+      showTab('my-time',t);
+  });
+  document.getElementById('e-proj').focus();
+}
+
+// ── APP INIT ──
+function initApp(){
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById('e-date').value=today;
+  document.getElementById('entry-date-lbl').textContent='Today: '+fmtDate(today);
+  const {monStr}=getWeekDates();
+  document.getElementById('r-from').value=monStr;
+  document.getElementById('r-to').value=today;
+  loadProjects(); loadMyTimesheet(); loadDeptFilters();
+}
+
+// ── TABS ──
+function showTab(id,el){
+  // Permission gate
+  if((id==='team-view'||id==='reports')&&isMember()){toast('Access restricted','red');return;}
+  if(id==='admin'&&!isAdmin()){toast('Admin access only','red');return;}
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-'+id).classList.add('active');
+  if(id==='team-view') loadTeamView();
+  if(id==='projects')  loadProjectsPage();
+  if(id==='admin')     loadAdmin();
+  if(id==='reports')   loadReportFilters();
+}
+
+// ── PROJECTS ──
+function loadProjects(){
+  const projects=DB.get('projects');
+  const sel=document.getElementById('e-proj');
+  sel.innerHTML='<option value="">— Select Project —</option>';
+  projects.filter(p=>p.status==='Active').forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.name; o.textContent=`${p.code} – ${p.name}`; sel.appendChild(o);
+  });
+  const rp=document.getElementById('r-proj');
+  rp.innerHTML='<option value="All">All Projects</option>';
+  projects.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=p.name;rp.appendChild(o);});
+  // also populate edit-entry modal project dropdown
+  const ee=document.getElementById('ee-proj');
+  if(ee){ee.innerHTML='';projects.forEach(p=>{const o=document.createElement('option');o.value=p.name;o.textContent=`${p.code} – ${p.name}`;ee.appendChild(o);});}
+}
+
+function loadProjectsPage(){
+  const projects=DB.get('projects'), entries=DB.get('entries');
+  const tbody=document.getElementById('projects-body');
+  tbody.innerHTML='';
+  if(!projects.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#a19f9d">No projects yet.</td></tr>';
+    return;
+  }
+  const canEdit=isAdmin()||isManager();
+  projects.forEach(p=>{
+    const hrs=entries.filter(e=>e.proj===p.name).reduce((s,e)=>s+e.hrs,0);
+    const mems=[...new Set(entries.filter(e=>e.proj===p.name).map(e=>e.uid))].length;
+    const actions=canEdit
+      ?`<button class="btn btn-outline btn-sm" onclick="editProject(${p.id})" style="margin-right:4px">✏️ Edit</button>
+         <button class="btn btn-red btn-sm" onclick="deleteProject(${p.id})">🗑 Delete</button>`
+      :'—';
+    tbody.innerHTML+=`<tr>
+      <td><strong>${p.code}</strong></td><td>${p.name}</td><td>${p.dept}</td>
+      <td>${statusBadge(p.status)}</td><td><strong>${hrs.toFixed(1)}</strong></td>
+      <td>${mems}</td><td>${actions}</td></tr>`;
+  });
+  // show/hide new project button
+  const nb=document.querySelector('#page-projects .btn-primary');
+  if(nb) nb.style.display=canEdit?'':'none';
+}
+
+function openProjectModal(){
+  document.getElementById('proj-modal-title').textContent='Add New Project';
+  document.getElementById('m-id').value='';
+  document.getElementById('m-code').value='';
+  document.getElementById('m-name').value='';
+  document.getElementById('m-dept').value='Engineering';
+  document.getElementById('m-status').value='Active';
+  document.getElementById('proj-modal').classList.add('open');
+}
+function editProject(id){
+  const p=DB.get('projects').find(x=>x.id===id); if(!p) return;
+  document.getElementById('proj-modal-title').textContent='Edit Project';
+  document.getElementById('m-id').value=p.id;
+  document.getElementById('m-code').value=p.code;
+  document.getElementById('m-name').value=p.name;
+  document.getElementById('m-dept').value=p.dept;
+  document.getElementById('m-status').value=p.status;
+  document.getElementById('proj-modal').classList.add('open');
+}
+function deleteProject(id){
+  const p=DB.get('projects').find(x=>x.id===id); if(!p) return;
+  if(!confirm(`Delete project "${p.name}"?`)) return;
+  DB.set('projects',DB.get('projects').filter(x=>x.id!==id));
+  loadProjects(); loadProjectsPage(); toast('Project deleted','red');
+}
+function saveProject(){
+  const code=document.getElementById('m-code').value.trim();
+  const name=document.getElementById('m-name').value.trim();
+  if(!code||!name){toast('Code and name required','red');return;}
+  const editId=document.getElementById('m-id').value;
+  const projects=DB.get('projects');
+  if(editId){
+    const idx=projects.findIndex(x=>String(x.id)===String(editId));
+    if(idx>-1){
+      const oldName=projects[idx].name;
+      projects[idx]={...projects[idx],code,name,dept:document.getElementById('m-dept').value,status:document.getElementById('m-status').value};
+      if(oldName!==name){
+        const entries=DB.get('entries').map(e=>e.proj===oldName?{...e,proj:name}:e);
+        DB.set('entries',entries);
+      }
+    }
+  } else {
+    projects.push({id:Date.now(),code,name,dept:document.getElementById('m-dept').value,status:document.getElementById('m-status').value});
+  }
+  DB.set('projects',projects);
+  closeModal('proj-modal');
+  loadProjects(); loadProjectsPage();
+  toast(editId?'✅ Project updated!':'✅ Project saved!');
+}
+
+// ── MY TIMESHEET ──
+function loadMyTimesheet(){
+  const {monStr,sunStr,label}=getWeekDates(currentWeekOffset);
+  document.getElementById('week-range-lbl').textContent=label;
+  const entries=DB.get('entries').filter(e=>e.uid===currentUser.id&&e.date>=monStr&&e.date<=sunStr)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  const totalHrs=entries.reduce((s,e)=>s+e.hrs,0);
+  const uniqDays=[...new Set(entries.map(e=>e.date))].length;
+  document.getElementById('my-kpis').innerHTML=`
+    <div class="kpi kpi-purple"><div class="kpi-val">${totalHrs.toFixed(1)}</div><div class="kpi-label">Hours This Week</div></div>
+    <div class="kpi kpi-blue"><div class="kpi-val">${entries.length}</div><div class="kpi-label">Entries</div></div>
+    <div class="kpi kpi-green"><div class="kpi-val">${uniqDays}</div><div class="kpi-label">Days Logged</div></div>
+    <div class="kpi kpi-orange"><div class="kpi-val">${Math.max(0,40-totalHrs).toFixed(1)}</div><div class="kpi-label">Hours Remaining</div></div>`;
+  const tbody=document.getElementById('my-entries-body');
+  tbody.innerHTML='';
+  if(!entries.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:#a19f9d">No entries this week. Add your first entry above!</td></tr>';
+    return;
+  }
+  entries.forEach(e=>{
+    tbody.innerHTML+=`<tr>
+      <td>${fmtDate(e.date)}</td><td>${e.proj}</td><td>${actBadge(e.act)}</td>
+      <td><strong>${e.hrs.toFixed(1)}</strong></td><td>${e.desc}</td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteEntry(${e.id})">🗑</button></td></tr>`;
+  });
+}
+function addEntry(){
+  const date=document.getElementById('e-date').value;
+  const proj=document.getElementById('e-proj').value;
+  const act=document.getElementById('e-act').value;
+  const hrs=parseFloat(document.getElementById('e-hrs').value);
+  const desc=document.getElementById('e-desc').value.trim();
+  if(!date||!proj||!act||!hrs||hrs<=0){toast('Please fill all fields','red');return;}
+  const entries=DB.get('entries');
+  entries.push({id:Date.now(),uid:currentUser.id,proj,act,hrs,date,desc});
+  DB.set('entries',entries);
+  clearForm(); loadMyTimesheet();
+  toast('✅ Entry saved!');
+}
+function deleteEntry(id){
+  if(!confirm('Delete this entry?')) return;
+  DB.set('entries',DB.get('entries').filter(e=>e.id!==id));
+  loadMyTimesheet(); toast('Entry deleted','red');
+}
+function clearForm(){
+  document.getElementById('e-proj').value='';
+  document.getElementById('e-act').value='';
+  document.getElementById('e-hrs').value='8';
+  document.getElementById('e-desc').value='';
+}
+function shiftWeek(dir){currentWeekOffset+=dir;loadMyTimesheet();}
+function goToday(){currentWeekOffset=0;loadMyTimesheet();}
+
+// ── TEAM VIEW ──
+function loadTeamView(){
+  const {monStr,sunStr,label}=getWeekDates();
+  document.getElementById('team-week-lbl').textContent=label;
+  const members=DB.get('members');
+  const entries=DB.get('entries');
+  const weekFilter=document.getElementById('team-week-filter').value;
+  const deptFilter=document.getElementById('team-dept-filter').value;
+
+  // For managers: only show own dept unless admin
+  const effectiveDept=isAdmin()?deptFilter:(deptFilter==='All'?currentUser.dept:deptFilter);
+
+  const grid=document.getElementById('team-status-grid');
+  grid.innerHTML='';
+  members.filter(m=>isAdmin()||(m.dept===currentUser.dept)).filter(m=>effectiveDept==='All'||m.dept===effectiveDept).forEach(m=>{
+    const wk=entries.filter(e=>e.uid===m.id&&e.date>=monStr&&e.date<=sunStr);
+    const hrs=wk.reduce((s,e)=>s+e.hrs,0);
+    const cls=hrs>=40?'hours-ok':hrs>0?'hours-low':'hours-zero';
+    grid.innerHTML+=`<div class="reminder-item"><strong>${m.name}</strong>
+      <span class="${cls} hours-chip">${hrs.toFixed(1)} hrs</span>
+      <div style="font-size:10px;opacity:.75;margin-top:3px">${m.dept}</div></div>`;
+  });
+
+  let {monStr:fs,sunStr:fe}=getWeekDates();
+  if(weekFilter==='last'){const w=getWeekDates(-1);fs=w.monStr;fe=w.sunStr;}
+
+  const filtered=entries.filter(e=>{
+    const m=members.find(x=>x.id===e.uid);
+    const inWeek=weekFilter==='all'||(e.date>=fs&&e.date<=fe);
+    const inDept=effectiveDept==='All'||(m&&m.dept===effectiveDept);
+    return inWeek&&inDept;
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+
+  const tbody=document.getElementById('team-entries-body');
+  tbody.innerHTML='';
+  filtered.forEach(e=>{
+    const m=members.find(x=>x.id===e.uid)||{name:'Unknown',dept:'—'};
+    tbody.innerHTML+=`<tr><td><strong>${m.name}</strong></td><td>${m.dept}</td><td>${e.proj}</td>
+      <td>${actBadge(e.act)}</td><td>${fmtDate(e.date)}</td>
+      <td><strong>${e.hrs.toFixed(1)}</strong></td><td>${e.desc}</td></tr>`;
+  });
+  if(!filtered.length) tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#a19f9d">No entries found.</td></tr>';
+}
+
+// ── DEPT FILTERS ──
+function loadDeptFilters(){
+  const depts=[...new Set(DB.get('members').map(m=>m.dept))].sort();
+  ['team-dept-filter','r-dept'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const cur=el.value;
+    while(el.options.length>1) el.remove(1);
+    depts.forEach(d=>{const o=new Option(d,d);el.add(o);});
+    el.value=cur||'All';
+  });
+}
+
+// ── REPORTS ──
+function loadReportFilters(){loadProjects();loadDeptFilters();}
+function runReport(){
+  const from=document.getElementById('r-from').value;
+  const to=document.getElementById('r-to').value;
+  const dept=document.getElementById('r-dept').value;
+  const proj=document.getElementById('r-proj').value;
+  const members=DB.get('members');
+  // managers scoped to their dept unless admin
+  const effectiveDept=isAdmin()?dept:(dept==='All'?currentUser.dept:dept);
+  const entries=DB.get('entries').filter(e=>{
+    const m=members.find(x=>x.id===e.uid);
+    return e.date>=from&&e.date<=to
+      &&(effectiveDept==='All'||(m&&m.dept===effectiveDept))
+      &&(proj==='All'||e.proj===proj);
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+
+  const totalHrs=entries.reduce((s,e)=>s+e.hrs,0);
+  const uniqEmps=[...new Set(entries.map(e=>e.uid))].length;
+  const uniqProjs=[...new Set(entries.map(e=>e.proj))].length;
+  document.getElementById('report-kpis').style.display='grid';
+  document.getElementById('report-kpis').innerHTML=`
+    <div class="kpi kpi-purple"><div class="kpi-val">${totalHrs.toFixed(1)}</div><div class="kpi-label">Total Hours</div></div>
+    <div class="kpi kpi-blue"><div class="kpi-val">${entries.length}</div><div class="kpi-label">Entries</div></div>
+    <div class="kpi kpi-green"><div class="kpi-val">${uniqEmps}</div><div class="kpi-label">Employees</div></div>
+    <div class="kpi kpi-orange"><div class="kpi-val">${uniqProjs}</div><div class="kpi-label">Projects</div></div>`;
+  document.getElementById('report-card').style.display='block';
+  const tbody=document.getElementById('report-body');
+  tbody.innerHTML='';
+  entries.forEach(e=>{
+    const m=members.find(x=>x.id===e.uid)||{name:'Unknown',dept:'—'};
+    tbody.innerHTML+=`<tr><td>${m.name}</td><td>${m.dept}</td><td>${e.proj}</td>
+      <td>${actBadge(e.act)}</td><td>${fmtDate(e.date)}</td>
+      <td><strong>${e.hrs.toFixed(1)}</strong></td><td>${e.desc}</td></tr>`;
+  });
+  if(!entries.length) tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:#a19f9d">No entries found.</td></tr>';
+  buildWeeklyGrid(entries,members,from,to);
+}
+function buildWeeklyGrid(entries,members,from,to){
+  const weeks={};
+  entries.forEach(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    const mon=new Date(d);mon.setDate(d.getDate()-d.getDay()+1);
+    const wk=mon.toISOString().slice(0,10);
+    const m=members.find(x=>x.id===e.uid)||{name:'Unknown'};
+    if(!weeks[wk])weeks[wk]={};
+    weeks[wk][m.name]=(weeks[wk][m.name]||0)+e.hrs;
+  });
+  const wkLabels=Object.keys(weeks).sort();
+  const empNames=[...new Set(entries.map(e=>(members.find(x=>x.id===e.uid)||{name:'Unknown'}).name))].sort();
+  if(!wkLabels.length){document.getElementById('weekly-card').style.display='none';return;}
+  document.getElementById('weekly-card').style.display='block';
+  const head=document.getElementById('weekly-head');
+  head.innerHTML='<th>Employee</th>'+wkLabels.map(w=>`<th>${w}</th>`).join('')+'<th>Total</th>';
+  const tbody=document.getElementById('weekly-body');
+  tbody.innerHTML='';
+  empNames.forEach(name=>{
+    const cells=wkLabels.map(w=>{const h=(weeks[w]&&weeks[w][name])||0;return h?`<td>${h.toFixed(1)}</td>`:`<td style="color:#a19f9d">—</td>`;});
+    const total=wkLabels.reduce((s,w)=>s+((weeks[w]&&weeks[w][name])||0),0);
+    tbody.innerHTML+=`<tr><td><strong>${name}</strong></td>${cells.join('')}<td><strong>${total.toFixed(1)}</strong></td></tr>`;
+  });
+  const totals=wkLabels.map(w=>Object.values(weeks[w]||{}).reduce((s,v)=>s+v,0));
+  const grand=totals.reduce((s,v)=>s+v,0);
+  tbody.innerHTML+=`<tr class="summary-row"><td>TOTAL</td>${totals.map(t=>`<td>${t.toFixed(1)}</td>`).join('')}<td>${grand.toFixed(1)}</td></tr>`;
+}
+function exportCSV(){
+  const from=document.getElementById('r-from').value, to=document.getElementById('r-to').value;
+  const members=DB.get('members');
+  const entries=DB.get('entries').filter(e=>e.date>=from&&e.date<=to);
+  let csv='Date,Employee,Email,Department,Project,Activity,Hours,Description\n';
+  entries.forEach(e=>{
+    const m=members.find(x=>x.id===e.uid)||{name:'Unknown',email:'',dept:''};
+    csv+=`${e.date},"${m.name}","${m.email}","${m.dept}","${e.proj}",${e.act},${e.hrs},"${e.desc}"\n`;
+  });
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`timesheet_${from}_to_${to}.csv`; a.click();
+  toast('✅ CSV exported!');
+}
+function sendWeeklySummary(){
+  const members=DB.get('members');
+  const {monStr,sunStr,label}=getWeekDates();
+  const entries=DB.get('entries').filter(e=>e.date>=monStr&&e.date<=sunStr);
+  let s='Weekly Timesheet Summary\n========================\nWeek: '+label+'\n\n';
+  members.forEach(m=>{const hrs=entries.filter(e=>e.uid===m.id).reduce((x,e)=>x+e.hrs,0);s+=`${m.name} (${m.dept}): ${hrs.toFixed(1)} hrs\n`;});
+  s+=`\nTotal: ${entries.reduce((x,e)=>x+e.hrs,0).toFixed(1)} hrs`;
+  alert('📧 Weekly Summary Preview:\n\n'+s+'\n\n[Configure Power Automate to send this automatically every Monday]');
+  toast('✅ Summary ready!');
+}
+
+async function forceSyncNow(){
+  if(!cloudMode){toast('Running in local mode — no cloud connected','red');return;}
+  setSyncStatus('ing','Syncing...');
+  await loadFromCloud();
+  loadAdmin();
+  loadMyTimesheet();
+  toast('✅ Data refreshed from cloud!');
+}
+
+// ── ADMIN ──
+function loadAdmin(){
+  loadDeptFilters();
+  loadPendingReminders();
+  loadAdminMembers();
+  loadActivityCodes();
+  loadAdminEntries();
+  // Cloud status panel
+  const badge=document.getElementById('admin-cloud-badge');
+  const info=document.getElementById('admin-cloud-info');
+  if(badge && info){
+    const {bin}=getBinCreds();
+    if(cloudMode && bin){
+      badge.className='badge badge-green'; badge.textContent='Connected — Live';
+      info.innerHTML=`<b>Bin ID:</b> ${bin}<br>
+        <b>Mode:</b> All team members share the same database in real time.<br>
+        <b>Auto-refresh:</b> Every 30 seconds. Use Sync Now to refresh immediately.<br>
+        <b>To share credentials with team:</b> Give them the same Bin ID and Master Key so they enter it on first setup.`;
+    } else {
+      badge.className='badge badge-orange'; badge.textContent='Local Mode';
+      info.innerHTML=`<b>Mode:</b> Local only — data is stored on this device only.<br>
+        Click <b>Change Database</b> to connect a JSONBin cloud database and share data across your team.`;
+    }
+  }
+}
+
+function loadPendingReminders(){
+  const yday=getYesterday();
+  const members=DB.get('members');
+  const entries=DB.get('entries');
+  const missing=members.filter(m=>!entries.some(e=>e.uid===m.id&&e.date===yday));
+  const body=document.getElementById('pending-reminders-body');
+  const paList=document.getElementById('pa-pending-list');
+  if(!missing.length){
+    body.innerHTML='<div class="all-clear">✅ All team members filled their timesheet for '+fmtDate(yday)+'</div>';
+    if(paList) paList.textContent='All submitted — no reminders needed for '+yday;
+    return;
+  }
+  body.innerHTML=`<div class="alert alert-warn" style="margin-bottom:12px">⚠️ ${missing.length} member(s) have not filled their timesheet for <strong>${fmtDate(yday)}</strong></div>`;
+  missing.forEach(m=>{
+    body.innerHTML+=`<div class="pending-item">
+      <div><div class="pending-name">${m.name}</div><div class="pending-email">${m.email} · ${m.dept}</div></div>
+      ${roleBadge(m.role)}
+    </div>`;
+  });
+  if(paList) paList.textContent=missing.map(m=>m.email).join('\n');
+}
+
+function loadAdminMembers(){
+  const members=DB.get('members'), entries=DB.get('entries');
+  const {monStr,sunStr}=getWeekDates();
+  const tbody=document.getElementById('admin-members-body');
+  tbody.innerHTML='';
+
+  // populate employee filter for admin entries
+  const empFilter=document.getElementById('adm-emp-filter');
+  if(empFilter){
+    empFilter.innerHTML='<option value="All">All Employees</option>';
+    members.forEach(m=>{const o=new Option(m.name,m.id);empFilter.add(o);});
+  }
+
+  members.forEach(m=>{
+    const wkHrs=entries.filter(e=>e.uid===m.id&&e.date>=monStr&&e.date<=sunStr).reduce((s,e)=>s+e.hrs,0);
+    const chip=wkHrs>=40?'hours-ok':wkHrs>0?'hours-low':'hours-zero';
+    // role dropdown — admin can change anyone's role including to admin
+    const roleOpts=['member','manager','admin'].map(r=>
+      `<option value="${r}" ${m.role===r?'selected':''}>${r}</option>`).join('');
+    tbody.innerHTML+=`<tr>
+      <td><strong>${m.name}</strong></td>
+      <td style="font-size:12px">${m.email}</td>
+      <td>${m.dept}</td>
+      <td class="inline-role">
+        <select onchange="changeRole(${m.id},this.value)" ${m.id===currentUser.id?'disabled title="Cannot change your own role"':''}>
+          ${roleOpts}
+        </select>
+      </td>
+      <td><span class="${chip} hours-chip">${wkHrs.toFixed(1)} hrs</span></td>
+      <td><button class="btn btn-red btn-sm" onclick="removeMember(${m.id})" ${m.id===currentUser.id?'disabled':''}>Remove</button></td>
+    </tr>`;
+  });
+}
+
+function changeRole(id, newRole){
+  const members=DB.get('members');
+  const idx=members.findIndex(m=>m.id===id);
+  if(idx===-1) return;
+  members[idx].role=newRole;
+  DB.set('members',members);
+  toast(`✅ ${members[idx].name} is now ${newRole}`);
+  // no full reload needed — dropdown already shows new value
+}
+
+function addMember(){
+  const name=document.getElementById('a-name').value.trim();
+  const email=document.getElementById('a-email').value.trim();
+  if(!name||!email){toast('Name and email required','red');return;}
+  const members=DB.get('members');
+  if(members.some(m=>m.email.toLowerCase()===email.toLowerCase())){toast('Email already exists','red');return;}
+  members.push({id:Date.now(),name,email,
+    dept:document.getElementById('a-dept').value,
+    role:document.getElementById('a-role').value});
+  DB.set('members',members);
+  document.getElementById('a-name').value='';
+  document.getElementById('a-email').value='';
+  loadAdmin(); loadDeptFilters(); initLogin();
+  toast('✅ Team member added!');
+}
+
+function removeMember(id){
+  if(id===currentUser.id){toast('Cannot remove yourself','red');return;}
+  const m=DB.get('members').find(x=>x.id===id);
+  if(!confirm(`Remove ${m?m.name:'this member'}?`)) return;
+  DB.set('members',DB.get('members').filter(m=>m.id!==id));
+  loadAdmin(); toast('Member removed','red');
+}
+
+// ── ACTIVITY CODES ──
+function loadActivityCodes(){
+  const codes=DB.get('activity_codes',[]);
+  const tbody=document.getElementById('activity-codes-body');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  if(!codes.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:18px;color:#a19f9d">No activity codes yet.</td></tr>';return;}
+  codes.forEach(c=>{
+    tbody.innerHTML+=`<tr>
+      <td>${actBadge(c.id)}</td>
+      <td>${c.desc}</td>
+      <td><span style="font-size:11px;color:#605e5c">${c.cat||'—'}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="editActivityCode('${c.id}')" style="margin-right:4px">✏️</button>
+        <button class="btn btn-red btn-sm" onclick="deleteActivityCode('${c.id}')">🗑</button>
+      </td></tr>`;
+  });
+}
+function saveActivityCode(){
+  const code=document.getElementById('ac-code').value.trim().toUpperCase();
+  const desc=document.getElementById('ac-desc').value.trim();
+  const cat=document.getElementById('ac-cat').value.trim();
+  const editId=document.getElementById('ac-edit-id').value;
+  if(!code||!desc){toast('Code and description required','red');return;}
+  let codes=DB.get('activity_codes',[]);
+  if(editId){
+    const idx=codes.findIndex(c=>c.id===editId);
+    if(idx>-1) codes[idx]={id:code,desc,cat};
+  } else {
+    if(codes.some(c=>c.id===code)){toast('Code already exists','red');return;}
+    codes.push({id:code,desc,cat});
+  }
+  DB.set('activity_codes',codes);
+  clearActivityCode(); loadActivityCodes();
+  toast(editId?'✅ Code updated!':'✅ Code added!');
+}
+function editActivityCode(id){
+  const c=DB.get('activity_codes',[]).find(x=>x.id===id); if(!c) return;
+  document.getElementById('ac-code').value=c.id;
+  document.getElementById('ac-desc').value=c.desc;
+  document.getElementById('ac-cat').value=c.cat||'';
+  document.getElementById('ac-edit-id').value=c.id;
+}
+function deleteActivityCode(id){
+  if(!confirm(`Delete activity code "${id}"?`)) return;
+  DB.set('activity_codes',DB.get('activity_codes',[]).filter(c=>c.id!==id));
+  loadActivityCodes(); toast('Code deleted','red');
+}
+function clearActivityCode(){
+  document.getElementById('ac-code').value='';
+  document.getElementById('ac-desc').value='';
+  document.getElementById('ac-cat').value='';
+  document.getElementById('ac-edit-id').value='';
+}
+
+// ── ADMIN: ALL ENTRIES ──
+function loadAdminEntries(){
+  const members=DB.get('members');
+  const weekFilter=document.getElementById('adm-week-filter')?document.getElementById('adm-week-filter').value:'this';
+  const empFilter=document.getElementById('adm-emp-filter')?document.getElementById('adm-emp-filter').value:'All';
+  let {monStr:fs,sunStr:fe}=getWeekDates();
+  if(weekFilter==='last'){const w=getWeekDates(-1);fs=w.monStr;fe=w.sunStr;}
+  let entries=DB.get('entries');
+  if(weekFilter!=='all') entries=entries.filter(e=>e.date>=fs&&e.date<=fe);
+  if(empFilter!=='All') entries=entries.filter(e=>String(e.uid)===String(empFilter));
+  entries=entries.sort((a,b)=>b.date.localeCompare(a.date));
+  const tbody=document.getElementById('admin-entries-body');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  if(!entries.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#a19f9d">No entries found.</td></tr>';return;}
+  entries.forEach(e=>{
+    const m=members.find(x=>x.id===e.uid)||{name:'Unknown'};
+    tbody.innerHTML+=`<tr>
+      <td>${fmtDate(e.date)}</td>
+      <td><strong>${m.name}</strong></td>
+      <td>${e.proj}</td><td>${actBadge(e.act)}</td>
+      <td>${e.hrs.toFixed(1)}</td><td>${e.desc}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="adminEditEntry(${e.id})" style="margin-right:4px">✏️</button>
+        <button class="btn btn-red btn-sm" onclick="adminDeleteEntry(${e.id})">🗑</button>
+      </td></tr>`;
+  });
+}
+function adminEditEntry(id){
+  const e=DB.get('entries').find(x=>x.id===id); if(!e) return;
+  loadProjects(); // ensure dropdown is populated
+  document.getElementById('ee-id').value=e.id;
+  document.getElementById('ee-date').value=e.date;
+  document.getElementById('ee-hrs').value=e.hrs;
+  document.getElementById('ee-act').value=e.act;
+  document.getElementById('ee-desc').value=e.desc;
+  setTimeout(()=>{document.getElementById('ee-proj').value=e.proj;},50);
+  document.getElementById('edit-entry-modal').classList.add('open');
+}
+function saveAdminEntry(){
+  const id=parseInt(document.getElementById('ee-id').value);
+  const entries=DB.get('entries');
+  const idx=entries.findIndex(e=>e.id===id); if(idx===-1) return;
+  entries[idx]={...entries[idx],
+    date:document.getElementById('ee-date').value,
+    proj:document.getElementById('ee-proj').value,
+    act:document.getElementById('ee-act').value,
+    hrs:parseFloat(document.getElementById('ee-hrs').value),
+    desc:document.getElementById('ee-desc').value
+  };
+  DB.set('entries',entries);
+  closeModal('edit-entry-modal');
+  loadAdminEntries(); loadMyTimesheet();
+  toast('✅ Entry updated!');
+}
+function adminDeleteEntry(id){
+  if(!confirm('Delete this entry?')) return;
+  DB.set('entries',DB.get('entries').filter(e=>e.id!==id));
+  loadAdminEntries(); loadMyTimesheet();
+  toast('Entry deleted','red');
+}
+
+// ── PENDING EMAIL HELPERS ──
+function copyPendingEmails(){
+  const yday=getYesterday();
+  const members=DB.get('members'), entries=DB.get('entries');
+  const missing=members.filter(m=>!entries.some(e=>e.uid===m.id&&e.date===yday));
+  if(!missing.length){toast('Everyone is up to date!');return;}
+  const emails=missing.map(m=>m.email).join('; ');
+  navigator.clipboard.writeText(emails).then(()=>toast('✅ Emails copied to clipboard!'))
+    .catch(()=>{prompt('Copy these emails:',emails);});
+}
+function mailtoReminder(){
+  const yday=getYesterday();
+  const members=DB.get('members'), entries=DB.get('entries');
+  const missing=members.filter(m=>!entries.some(e=>e.uid===m.id&&e.date===yday));
+  if(!missing.length){toast('No pending reminders — everyone is up to date!');return;}
+  const to=missing.map(m=>m.email).join(';');
+  const subject=encodeURIComponent(`⏱ Reminder: Please fill your timesheet for ${fmtDate(yday)}`);
+  const body=encodeURIComponent(`Hi,\n\nThis is a reminder that your timesheet for ${fmtDate(yday)} has not been submitted yet.\n\nPlease log your hours at your earliest convenience.\n\nThank you,\nManagement`);
+  window.open(`mailto:${to}?subject=${subject}&body=${body}`);
+}
+function copyEmailTemplate(){
+  const text=document.getElementById('email-template-text').textContent;
+  navigator.clipboard.writeText(text).then(()=>toast('✅ Email template copied!'))
+    .catch(()=>{prompt('Copy this template:',text);});
+}
+
+// ── BULK UPLOAD ──
+const VALID_DEPTS=['Engineering','Finance','HR','IT','Operations','Sales','Marketing'];
+const VALID_ROLES=['member','manager','admin'];
+let bulkParsed=[];
+
+function openBulkModal(){
+  document.getElementById('bulk-step-1').style.display='block';
+  document.getElementById('bulk-step-2').style.display='none';
+  document.getElementById('bulk-paste').value='';
+  document.getElementById('bulk-file').value='';
+  bulkParsed=[];
+  document.getElementById('bulk-modal').classList.add('open');
+}
+
+function downloadMemberTemplate(){
+  const csv='Name,Email,Department,Role\nJohn Smith,john@company.com,Engineering,member\nJane Doe,jane@company.com,Finance,manager\nBob Admin,bob@company.com,IT,admin\n';
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='team_members_template.csv'; a.click();
+  toast('✅ Template downloaded!');
+}
+
+function readBulkFile(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{ document.getElementById('bulk-paste').value=e.target.result.trim(); };
+  reader.readAsText(file);
+}
+
+function parseBulkCSV(raw){
+  const lines=raw.trim().split('\n').map(l=>l.trim()).filter(l=>l);
+  const results=[], existing=DB.get('members');
+  let startIdx=0;
+  if(lines[0].toLowerCase().includes('name')||lines[0].toLowerCase().includes('email')) startIdx=1;
+  for(let i=startIdx;i<lines.length;i++){
+    const cols=lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));
+    const [name,email,dept,role]=cols;
+    const row={name,email,dept,role,rowNum:i+1,errors:[]};
+    if(!name||name.length<2) row.errors.push('Invalid name');
+    if(!email||!email.includes('@')) row.errors.push('Invalid email');
+    if(dept&&!VALID_DEPTS.includes(dept)) row.errors.push(`Dept must be: ${VALID_DEPTS.slice(0,4).join(', ')}...`);
+    if(role&&!VALID_ROLES.includes((role||'').toLowerCase())) row.errors.push('Role: member/manager/admin');
+    if(existing.some(m=>m.email.toLowerCase()===(email||'').toLowerCase())) row.errors.push('Email already exists');
+    row.finalDept=VALID_DEPTS.includes(dept)?dept:'Engineering';
+    row.finalRole=VALID_ROLES.includes((role||'').toLowerCase())?(role||'').toLowerCase():'member';
+    row.valid=row.errors.length===0;
+    results.push(row);
+  }
+  return results;
+}
+
+function previewBulk(){
+  const raw=document.getElementById('bulk-paste').value.trim();
+  if(!raw){toast('Please paste CSV data or upload a file','red');return;}
+  bulkParsed=parseBulkCSV(raw);
+  if(!bulkParsed.length){toast('No valid rows found','red');return;}
+  const valid=bulkParsed.filter(r=>r.valid).length;
+  const invalid=bulkParsed.length-valid;
+  document.getElementById('bulk-summary').innerHTML=
+    `<span style="color:#107c10;font-weight:600">✅ ${valid} ready to import</span>`+
+    (invalid?`&nbsp;·&nbsp;<span style="color:#d13438;font-weight:600">⚠️ ${invalid} row(s) with errors (will be skipped)</span>`:'');
+  const tbody=document.getElementById('bulk-preview-body');
+  tbody.innerHTML='';
+  bulkParsed.forEach(r=>{
+    const status=r.valid
+      ?'<span style="color:#107c10;font-size:11px;font-weight:600">✅ Ready</span>'
+      :`<span style="color:#d13438;font-size:10px">${r.errors.join('<br>')}</span>`;
+    tbody.innerHTML+=`<tr style="background:${r.valid?'':'#fff5f5'};border-bottom:1px solid #e1dfdd">
+      <td style="padding:6px 10px;color:#a19f9d">${r.rowNum}</td>
+      <td style="padding:6px 10px">${r.name||'—'}</td>
+      <td style="padding:6px 10px;font-size:11px">${r.email||'—'}</td>
+      <td style="padding:6px 10px">${r.finalDept}</td>
+      <td style="padding:6px 10px">${roleBadge(r.finalRole)}</td>
+      <td style="padding:6px 10px">${status}</td></tr>`;
+  });
+  const btn=document.getElementById('bulk-import-btn');
+  btn.textContent=`✚ Import ${valid} Member${valid!==1?'s':''}`;
+  btn.disabled=valid===0;
+  document.getElementById('bulk-step-1').style.display='none';
+  document.getElementById('bulk-step-2').style.display='block';
+}
+
+function backBulk(){
+  document.getElementById('bulk-step-1').style.display='block';
+  document.getElementById('bulk-step-2').style.display='none';
+}
+
+function confirmBulkImport(){
+  const toAdd=bulkParsed.filter(r=>r.valid);
+  if(!toAdd.length) return;
+  const members=DB.get('members');
+  toAdd.forEach(r=>{
+    members.push({id:Date.now()+Math.floor(Math.random()*10000),
+      name:r.name,email:r.email,dept:r.finalDept,role:r.finalRole});
+  });
+  DB.set('members',members);
+  closeModal('bulk-modal');
+  loadAdmin(); loadDeptFilters(); initLogin();
+  toast(`✅ ${toAdd.length} member${toAdd.length!==1?'s':''} imported!`);
+}
+
+// ── INIT ──
+appStart();
+</script>
+</body>
+</html>
